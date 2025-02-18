@@ -22,11 +22,12 @@ func main() {
 
 	version := uint64(100)
 	var ts [tsrocksdb.TimestampSize]byte
-	binary.LittleEndian.PutUint64(ts[:], version)
 
 	batch := grocksdb.NewWriteBatch()
 	defer batch.Destroy()
-	for i := 0; i < 10000; i++ {
+	for i := 0; i < 100000; i++ {
+		binary.LittleEndian.PutUint64(ts[:], uint64((i%1000)+10))
+
 		key := []byte("key" + strconv.Itoa(i))
 		value := []byte("value" + strconv.Itoa(i))
 		batch.PutCFWithTS(cfHandle, key, ts[:], value)
