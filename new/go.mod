@@ -2,6 +2,8 @@ module example.com
 
 go 1.23.1
 
+toolchain go1.23.6
+
 require (
 	github.com/crypto-org-chain/cronos/versiondb v0.0.0-20250203081123-24a0fcfe0a84
 	github.com/linxGnu/grocksdb v1.9.2

@@ -2,7 +2,10 @@ module example.com
 
 go 1.23.1
 
-require github.com/crypto-org-chain/cronos/versiondb v0.0.0-20240702085708-b4fc52ee0607
+require (
+	github.com/crypto-org-chain/cronos/versiondb v0.0.0-20240702085708-b4fc52ee0607
+	github.com/linxGnu/grocksdb v1.8.0
+)
 
 require (
 	cosmossdk.io/errors v1.0.0 // indirect
@@ -47,7 +50,6 @@ require (
 	github.com/jmhodges/levigo v1.0.0 // indirect
 	github.com/klauspost/compress v1.16.3 // indirect
 	github.com/libp2p/go-buffer-pool v0.1.0 // indirect
-	github.com/linxGnu/grocksdb v1.8.0 // indirect
 	github.com/magiconair/properties v1.8.6 // indirect
 	github.com/matttproud/golang_protobuf_extensions v1.0.4 // indirect
 	github.com/mimoo/StrobeGo v0.0.0-20210601165009-122bf33a46e0 // indirect
