@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"encoding/binary"
 	"fmt"
 	"math"
@@ -66,7 +67,23 @@ func main() {
 	defaultSyncWriteOpts.SetSync(true)
 	batch := grocksdb.NewWriteBatch()
 	defer batch.Destroy()
+	readOpts := grocksdb.NewDefaultReadOptions()
+	defer readOpts.Destroy()
+
 	for _, pair := range pairs {
+		readOpts.SetTimestamp(pair.Timestamp)
+		oldValue, oldTimestamp, err := db.GetCFWithTS(readOpts, cfHandle, pair.Key)
+		if err != nil {
+			panic(err)
+		}
+
+		clean := bytes.Equal(oldValue.Data(), pair.Value) && bytes.Equal(oldTimestamp.Data(), pair.Timestamp)
+		oldValue.Free()
+		oldTimestamp.Free()
+		if clean {
+			continue
+		}
+
 		batch.PutCFWithTS(cfHandle, pair.Key, pair.Timestamp, pair.Value)
 		fmt.Printf("fix data: key: %s, ts: %d, value: %s\n", string(pair.Key), binary.LittleEndian.Uint64(pair.Timestamp), string(pair.Value))
 	}
