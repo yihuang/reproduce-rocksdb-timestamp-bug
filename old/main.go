@@ -26,7 +26,7 @@ func main() {
 
 	batch := grocksdb.NewWriteBatch()
 	defer batch.Destroy()
-	for i := 0; i < 100; i++ {
+	for i := 0; i < 10000; i++ {
 		key := []byte("key" + strconv.Itoa(i))
 		value := []byte("value" + strconv.Itoa(i))
 		batch.PutCFWithTS(cfHandle, key, ts[:], value)
