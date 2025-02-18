@@ -72,14 +72,13 @@ func main() {
 
 	for _, pair := range pairs {
 		readOpts.SetTimestamp(pair.Timestamp)
-		oldValue, oldTimestamp, err := db.GetCFWithTS(readOpts, cfHandle, pair.Key)
+		oldValue, err := db.GetCF(readOpts, cfHandle, pair.Key)
 		if err != nil {
 			panic(err)
 		}
 
-		clean := bytes.Equal(oldValue.Data(), pair.Value) && bytes.Equal(oldTimestamp.Data(), pair.Timestamp)
+		clean := bytes.Equal(oldValue.Data(), pair.Value)
 		oldValue.Free()
-		oldTimestamp.Free()
 		if clean {
 			continue
 		}
