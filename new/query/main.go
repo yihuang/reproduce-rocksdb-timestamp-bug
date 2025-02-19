@@ -19,7 +19,7 @@ func newTSReadOptions(version *int64) *grocksdb.ReadOptions {
 	}
 
 	var ts [m.TimestampSize]byte
-	binary.LittleEndian.PutUint64(ts[:], ver)
+	binary.BigEndian.PutUint64(ts[:], ver)
 
 	readOpts := grocksdb.NewDefaultReadOptions()
 	readOpts.SetTimestamp(ts[:])
@@ -61,13 +61,13 @@ func main() {
 		key := moveSliceToBytes(itr.Key())
 		value := moveSliceToBytes(itr.Value())
 
-		if binary.LittleEndian.Uint64(itr.Timestamp().Data()) == 0 {
+		if binary.BigEndian.Uint64(itr.Timestamp().Data()) == 0 {
 			// skip 0 timestamp
 			continue
 		}
 
 		if string(key) != fmt.Sprintf("key-%010d", counter) {
-			panic(fmt.Sprintf("wrong key: %s, %s, %d", string(key), string(value), binary.LittleEndian.Uint64(itr.Timestamp().Data())))
+			panic(fmt.Sprintf("wrong key: %s, %s, %d", string(key), string(value), binary.BigEndian.Uint64(itr.Timestamp().Data())))
 		}
 		if string(value) != fmt.Sprintf("value-%d-%d", counter, counter%1000+20) {
 			panic(fmt.Sprintf("wrong value: %s, %s", string(key), string(value)))

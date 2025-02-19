@@ -31,7 +31,7 @@ func main() {
 		key := []byte(fmt.Sprintf("key-%010d", i))
 		for j := 0; j < 5; j++ {
 			version := j + 10
-			binary.LittleEndian.PutUint64(ts[:], uint64(version))
+			binary.BigEndian.PutUint64(ts[:], uint64(version))
 			value := []byte(fmt.Sprintf("value-%d-%d", i, version))
 			pairs = append(pairs, KVPairWithTS{
 				Key:       key,
@@ -44,7 +44,7 @@ func main() {
 	// write a pass to make sure the version is updated
 	for i := 0; i < 10000; i++ {
 		version := i%1000 + 20
-		binary.LittleEndian.PutUint64(ts[:], uint64(version))
+		binary.BigEndian.PutUint64(ts[:], uint64(version))
 
 		key := []byte(fmt.Sprintf("key-%010d", i))
 		value := []byte(fmt.Sprintf("value-%d-%d", i, version))
@@ -60,13 +60,13 @@ func main() {
 	defaultSyncWriteOpts.SetSync(true)
 
 	// clear ts to 0
-	binary.LittleEndian.PutUint64(ts[:], 0)
+	binary.BigEndian.PutUint64(ts[:], 0)
 
 	batch := grocksdb.NewWriteBatch()
 	defer batch.Destroy()
 	for _, pair := range pairs {
 		batch.PutCFWithTS(cfHandle, pair.Key, pair.Timestamp, pair.Value)
-		fmt.Printf("fix data: key: %s, ts: %d, value: %s\n", string(pair.Key), binary.LittleEndian.Uint64(pair.Timestamp), string(pair.Value))
+		fmt.Printf("fix data: key: %s, ts: %d, value: %s\n", string(pair.Key), binary.BigEndian.Uint64(pair.Timestamp), string(pair.Value))
 
 		// also write the timestamp 0 values
 		batch.PutCFWithTS(cfHandle, append(pair.Key, pair.Timestamp...), ts[:], pair.Value)
