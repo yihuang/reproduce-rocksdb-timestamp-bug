@@ -55,7 +55,7 @@ func main() {
 			continue
 		}
 		count++
-		fmt.Println(string(key), string(value))
+		fmt.Println(string(key), string(value), ts)
 	}
 	fmt.Println("total", count)
 }
