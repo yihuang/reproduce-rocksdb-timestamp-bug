@@ -40,20 +40,24 @@ func main() {
 		panic(err)
 	}
 
-	version := int64(100000)
+	version := int64(10000)
 	itr := db.NewIteratorCF(newTSReadOptions(&version), cfHandle)
 	itr.SeekToFirst()
+	count := 0
 	for ; itr.Valid(); itr.Next() {
 		key := moveSliceToBytes(itr.Key())
 		value := moveSliceToBytes(itr.Value())
+		ts := binary.LittleEndian.Uint64(itr.Timestamp().Data())
 
-		if binary.LittleEndian.Uint64(itr.Timestamp().Data()) == 0 {
+		if ts == 0 {
 			// skip 0 timestamp
+			fmt.Println("skip", string(key), string(value), ts)
 			continue
 		}
-
-		fmt.Println(string(key), string(value))
+		count++
+		fmt.Println(string(key), string(value), ts)
 	}
+	fmt.Println("total", count)
 }
 
 func moveSliceToBytes(s *grocksdb.Slice) []byte {

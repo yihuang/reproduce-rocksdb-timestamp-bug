@@ -44,7 +44,6 @@ func main() {
 	version := int64(0)
 	itr := db.NewIteratorCF(newTSReadOptions(&version), cfHandle)
 	itr.SeekToFirst()
-
 	var pairs []KVPairWithTS
 	for ; itr.Valid(); itr.Next() {
 		key := moveSliceToBytes(itr.Key())
@@ -66,20 +65,21 @@ func main() {
 
 	defaultSyncWriteOpts := grocksdb.NewDefaultWriteOptions()
 	defaultSyncWriteOpts.SetSync(true)
-
+	batch := grocksdb.NewWriteBatch()
+	defer batch.Destroy()
 	readOpts := grocksdb.NewDefaultReadOptions()
 	defer readOpts.Destroy()
 
-	batch := grocksdb.NewWriteBatch()
-	defer batch.Destroy()
 	for _, pair := range pairs {
 		readOpts.SetTimestamp(pair.Timestamp)
-		oldValue, oldTS, err := db.GetCFWithTS(readOpts, cfHandle, pair.Key)
+		oldValue, err := db.GetCF(readOpts, cfHandle, pair.Key)
 		if err != nil {
 			panic(err)
 		}
 
-		if bytes.Equal(oldValue.Data(), pair.Value) && bytes.Equal(oldTS.Data(), pair.Timestamp) {
+		clean := bytes.Equal(oldValue.Data(), pair.Value)
+		oldValue.Free()
+		if clean {
 			continue
 		}
 
