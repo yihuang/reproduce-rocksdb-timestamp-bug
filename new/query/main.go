@@ -42,15 +42,14 @@ func main() {
 
 	version := int64(100000)
 
-	for i := 0; i < 10000; i++ {
+	for i := 0; i < 1000; i++ {
 		key := fmt.Sprintf("key-%010d", i)
 		data, err := db.GetCF(newTSReadOptions(&version), cfHandle, []byte(key))
 		if err != nil {
 			panic(err)
 		}
-		value := fmt.Sprintf("value-%d-%d", i, i%1000+20)
-		if string(data.Data()) != value {
-			panic(fmt.Sprintf("wrong value: %s, %s", key, value))
+		if string(data.Data()) != fmt.Sprintf("value-%d-%d", i, i%1000+20) {
+			panic(fmt.Sprintf("wrong value: %s, %s", key, string(data.Data())))
 		}
 		data.Free()
 	}

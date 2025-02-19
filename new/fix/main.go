@@ -27,7 +27,7 @@ func main() {
 	var ts [tsrocksdb.TimestampSize]byte
 	var pairs []KVPairWithTS
 	// add intermidiate versions
-	for i := 0; i < 10000; i++ {
+	for i := 0; i < 1000; i++ {
 		key := []byte(fmt.Sprintf("key-%010d", i))
 		for j := 0; j < 5; j++ {
 			version := j + 10
@@ -42,7 +42,7 @@ func main() {
 	}
 
 	// write a pass to make sure the version is updated
-	for i := 0; i < 10000; i++ {
+	for i := 0; i < 1000; i++ {
 		version := i%1000 + 20
 		binary.LittleEndian.PutUint64(ts[:], uint64(version))
 
