@@ -41,6 +41,20 @@ func main() {
 	}
 
 	version := int64(100000)
+
+	for i := 0; i < 10000; i++ {
+		key := fmt.Sprintf("key-%010d", i)
+		data, err := db.GetCF(newTSReadOptions(&version), cfHandle, []byte(key))
+		if err != nil {
+			panic(err)
+		}
+		value := fmt.Sprintf("value-%d-%d", i, i%1000+20)
+		if string(data.Data()) != value {
+			panic(fmt.Sprintf("wrong value: %s, %s", key, value))
+		}
+		data.Free()
+	}
+
 	itr := db.NewIteratorCF(newTSReadOptions(&version), cfHandle)
 	itr.SeekToFirst()
 	counter := 0
@@ -54,7 +68,7 @@ func main() {
 		}
 
 		if string(key) != fmt.Sprintf("key-%010d", counter) {
-			panic(fmt.Sprintf("wrong key: %s", string(key)))
+			panic(fmt.Sprintf("wrong key: %s, %s", string(key), string(value)))
 		}
 		if string(value) != fmt.Sprintf("value-%d-%d", counter, counter%1000+20) {
 			panic(fmt.Sprintf("wrong value: %s, %s", string(key), string(value)))

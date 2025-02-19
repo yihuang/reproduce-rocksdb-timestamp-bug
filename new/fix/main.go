@@ -1,11 +1,11 @@
 package main
 
 import (
-	"bytes"
 	"encoding/binary"
 	"fmt"
 	"math"
 	"os"
+	"slices"
 
 	"github.com/crypto-org-chain/cronos/versiondb/tsrocksdb"
 	"github.com/linxGnu/grocksdb"
@@ -34,33 +34,42 @@ type KVPairWithTS struct {
 }
 
 func main() {
-	dir := os.Args[1]
+	dirOut := os.Args[1]
 
-	db, cfHandle, err := tsrocksdb.OpenVersionDB(dir)
+	dbOut, cfHandleOut, err := tsrocksdb.OpenVersionDB(dirOut)
 	if err != nil {
 		panic(err)
 	}
 
-	version := int64(0)
-	itr := db.NewIteratorCF(newTSReadOptions(&version), cfHandle)
-	itr.SeekToFirst()
-
+	var ts [tsrocksdb.TimestampSize]byte
 	var pairs []KVPairWithTS
-	for ; itr.Valid(); itr.Next() {
-		key := moveSliceToBytes(itr.Key())
-		value := moveSliceToBytes(itr.Value())
-
-		if binary.LittleEndian.Uint64(itr.Timestamp().Data()) != 0 {
-			fmt.Println("skip key", string(key))
-			continue
+	// add intermidiate versions
+	for i := 0; i < 10000; i++ {
+		key := []byte(fmt.Sprintf("key-%010d", i))
+		for j := 0; j < 5; j++ {
+			version := j + 10
+			binary.LittleEndian.PutUint64(ts[:], uint64(version))
+			value := []byte(fmt.Sprintf("value-%d-%d", i, j))
+			pairs = append(pairs, KVPairWithTS{
+				Key:       key,
+				Value:     value,
+				Timestamp: slices.Clone(ts[:]),
+			})
 		}
+	}
 
-		ts := key[len(key)-tsrocksdb.TimestampSize:]
-		key = key[:len(key)-tsrocksdb.TimestampSize]
+	// write a pass to make sure the version is updated
+	for i := 0; i < 10000; i++ {
+		version := i%1000 + 20
+		binary.LittleEndian.PutUint64(ts[:], uint64(version))
+
+		key := []byte(fmt.Sprintf("key-%010d", i))
+		value := []byte(fmt.Sprintf("value-%d-%d", i, version))
+
 		pairs = append(pairs, KVPairWithTS{
 			Key:       key,
 			Value:     value,
-			Timestamp: ts,
+			Timestamp: slices.Clone(ts[:]),
 		})
 	}
 
@@ -73,20 +82,13 @@ func main() {
 	batch := grocksdb.NewWriteBatch()
 	defer batch.Destroy()
 	for _, pair := range pairs {
-		readOpts.SetTimestamp(pair.Timestamp)
-		oldValue, oldTS, err := db.GetCFWithTS(readOpts, cfHandle, pair.Key)
-		if err != nil {
-			panic(err)
-		}
-
-		if bytes.Equal(oldValue.Data(), pair.Value) && bytes.Equal(oldTS.Data(), pair.Timestamp) {
-			continue
-		}
-
-		batch.PutCFWithTS(cfHandle, pair.Key, pair.Timestamp, pair.Value)
+		batch.PutCFWithTS(cfHandleOut, pair.Key, pair.Timestamp, pair.Value)
 		fmt.Printf("fix data: key: %s, ts: %d, value: %s\n", string(pair.Key), binary.LittleEndian.Uint64(pair.Timestamp), string(pair.Value))
+
+		// also write the timestamp 0 values
+		batch.PutCFWithTS(cfHandleOut, append(pair.Key, pair.Timestamp...), ts[:], pair.Value)
 	}
-	if err := db.Write(defaultSyncWriteOpts, batch); err != nil {
+	if err := dbOut.Write(defaultSyncWriteOpts, batch); err != nil {
 		panic(err)
 	}
 
