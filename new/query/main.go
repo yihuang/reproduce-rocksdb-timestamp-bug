@@ -40,7 +40,7 @@ func main() {
 		panic(err)
 	}
 
-	version := int64(100)
+	version := int64(100000)
 	itr := db.NewIteratorCF(newTSReadOptions(&version), cfHandle)
 	itr.SeekToFirst()
 	for ; itr.Valid(); itr.Next() {
