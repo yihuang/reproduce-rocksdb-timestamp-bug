@@ -41,10 +41,12 @@ func main() {
 	}
 
 	version := int64(100000)
+	readOpts := newTSReadOptions(&version)
+	defer readOpts.Destroy()
 
 	for i := 0; i < 10000; i++ {
 		key := fmt.Sprintf("key-%010d", i)
-		data, err := db.GetCF(newTSReadOptions(&version), cfHandle, []byte(key))
+		data, err := db.GetCF(readOpts, cfHandle, []byte(key))
 		if err != nil {
 			panic(err)
 		}
@@ -54,7 +56,7 @@ func main() {
 		data.Free()
 	}
 
-	itr := db.NewIteratorCF(newTSReadOptions(&version), cfHandle)
+	itr := db.NewIteratorCF(readOpts, cfHandle)
 	itr.SeekToFirst()
 	counter := 0
 	for ; itr.Valid(); itr.Next() {
