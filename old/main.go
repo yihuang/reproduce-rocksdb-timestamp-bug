@@ -20,7 +20,7 @@ func main() {
 	defaultSyncWriteOpts := grocksdb.NewDefaultWriteOptions()
 	defaultSyncWriteOpts.SetSync(true)
 
-	total := 100
+	total := 10000
 
 	batch := grocksdb.NewWriteBatch()
 	for i := 0; i < total; i++ {
