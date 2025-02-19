@@ -26,7 +26,7 @@ func main() {
 
 	for i := 0; i < 10000; i++ {
 		// add intermidiate versions
-		key := []byte(fmt.Sprintf("key-%10d", i))
+		key := []byte(fmt.Sprintf("key-%010d", i))
 		for j := 0; j < 5; j++ {
 			version := j + 10
 			binary.LittleEndian.PutUint64(ts[:], uint64(version))
@@ -42,7 +42,7 @@ func main() {
 		version := i%1000 + 20
 		binary.LittleEndian.PutUint64(ts[:], uint64(version))
 
-		key := []byte(fmt.Sprintf("key-%10d", i))
+		key := []byte(fmt.Sprintf("key-%010d", i))
 		value := []byte(fmt.Sprintf("value-%d-%d", i, version))
 		batch.PutCFWithTS(cfHandle, key, ts[:], value)
 		fmt.Println("wrote", string(key), string(value), version)

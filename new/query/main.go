@@ -53,7 +53,7 @@ func main() {
 			continue
 		}
 
-		if string(key) != fmt.Sprintf("key-%10d", counter) {
+		if string(key) != fmt.Sprintf("key-%010d", counter) {
 			panic("wrong key")
 		}
 		if string(value) != fmt.Sprintf("value-%d-%d", counter, counter%1000+20) {
