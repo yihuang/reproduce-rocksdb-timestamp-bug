@@ -6,7 +6,7 @@ import (
 	"os"
 	"slices"
 
-	"github.com/crypto-org-chain/cronos/versiondb/tsrocksdb"
+	"example.com/m"
 	"github.com/linxGnu/grocksdb"
 )
 
@@ -17,17 +17,17 @@ type KVPairWithTS struct {
 }
 
 func main() {
-	dirOut := os.Args[1]
+	dir := os.Args[1]
 
-	dbOut, cfHandleOut, err := tsrocksdb.OpenVersionDB(dirOut)
+	db, cfHandle, err := m.OpenDB(dir)
 	if err != nil {
 		panic(err)
 	}
 
-	var ts [tsrocksdb.TimestampSize]byte
+	var ts [m.TimestampSize]byte
 	var pairs []KVPairWithTS
 	// add intermidiate versions
-	for i := 0; i < 1000; i++ {
+	for i := 0; i < 10000; i++ {
 		key := []byte(fmt.Sprintf("key-%010d", i))
 		for j := 0; j < 5; j++ {
 			version := j + 10
@@ -42,7 +42,7 @@ func main() {
 	}
 
 	// write a pass to make sure the version is updated
-	for i := 0; i < 1000; i++ {
+	for i := 0; i < 10000; i++ {
 		version := i%1000 + 20
 		binary.LittleEndian.PutUint64(ts[:], uint64(version))
 
@@ -65,13 +65,13 @@ func main() {
 	batch := grocksdb.NewWriteBatch()
 	defer batch.Destroy()
 	for _, pair := range pairs {
-		batch.PutCFWithTS(cfHandleOut, pair.Key, pair.Timestamp, pair.Value)
+		batch.PutCFWithTS(cfHandle, pair.Key, pair.Timestamp, pair.Value)
 		fmt.Printf("fix data: key: %s, ts: %d, value: %s\n", string(pair.Key), binary.LittleEndian.Uint64(pair.Timestamp), string(pair.Value))
 
 		// also write the timestamp 0 values
-		batch.PutCFWithTS(cfHandleOut, append(pair.Key, pair.Timestamp...), ts[:], pair.Value)
+		batch.PutCFWithTS(cfHandle, append(pair.Key, pair.Timestamp...), ts[:], pair.Value)
 	}
-	if err := dbOut.Write(defaultSyncWriteOpts, batch); err != nil {
+	if err := db.Write(defaultSyncWriteOpts, batch); err != nil {
 		panic(err)
 	}
 

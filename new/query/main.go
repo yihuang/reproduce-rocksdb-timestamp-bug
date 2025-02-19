@@ -6,7 +6,7 @@ import (
 	"math"
 	"os"
 
-	"github.com/crypto-org-chain/cronos/versiondb/tsrocksdb"
+	"example.com/m"
 	"github.com/linxGnu/grocksdb"
 )
 
@@ -18,7 +18,7 @@ func newTSReadOptions(version *int64) *grocksdb.ReadOptions {
 		ver = uint64(*version)
 	}
 
-	var ts [tsrocksdb.TimestampSize]byte
+	var ts [m.TimestampSize]byte
 	binary.LittleEndian.PutUint64(ts[:], ver)
 
 	readOpts := grocksdb.NewDefaultReadOptions()
@@ -35,14 +35,14 @@ type KVPairWithTS struct {
 func main() {
 	dir := os.Args[1]
 
-	db, cfHandle, err := tsrocksdb.OpenVersionDB(dir)
+	db, cfHandle, err := m.OpenDB(dir)
 	if err != nil {
 		panic(err)
 	}
 
 	version := int64(100000)
 
-	for i := 0; i < 1000; i++ {
+	for i := 0; i < 10000; i++ {
 		key := fmt.Sprintf("key-%010d", i)
 		data, err := db.GetCF(newTSReadOptions(&version), cfHandle, []byte(key))
 		if err != nil {
