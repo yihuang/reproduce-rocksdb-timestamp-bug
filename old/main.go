@@ -4,7 +4,6 @@ import (
 	"encoding/binary"
 	"fmt"
 	"os"
-	"strconv"
 
 	"github.com/crypto-org-chain/cronos/versiondb/tsrocksdb"
 	"github.com/linxGnu/grocksdb"
@@ -20,16 +19,31 @@ func main() {
 	defaultSyncWriteOpts := grocksdb.NewDefaultWriteOptions()
 	defaultSyncWriteOpts.SetSync(true)
 
-	version := uint64(100)
 	var ts [tsrocksdb.TimestampSize]byte
 
 	batch := grocksdb.NewWriteBatch()
 	defer batch.Destroy()
-	for i := 0; i < 100000; i++ {
-		binary.LittleEndian.PutUint64(ts[:], uint64((i%1000)+10))
 
-		key := []byte("key" + strconv.Itoa(i))
-		value := []byte("value" + strconv.Itoa(i))
+	for i := 0; i < 10000; i++ {
+		// add intermidiate versions
+		key := []byte(fmt.Sprintf("key-%10d", i))
+		for j := 0; j < 5; j++ {
+			version := j + 10
+			binary.LittleEndian.PutUint64(ts[:], uint64(version))
+
+			value := []byte(fmt.Sprintf("value-%d-%d", i, j))
+			batch.PutCFWithTS(cfHandle, key, ts[:], value)
+			fmt.Println("wrote", string(key), string(value), version)
+		}
+	}
+
+	// write a pass to make sure the version is updated
+	for i := 0; i < 10000; i++ {
+		version := i%1000 + 20
+		binary.LittleEndian.PutUint64(ts[:], uint64(version))
+
+		key := []byte(fmt.Sprintf("key-%10d", i))
+		value := []byte(fmt.Sprintf("value-%d-%d", i, version))
 		batch.PutCFWithTS(cfHandle, key, ts[:], value)
 		fmt.Println("wrote", string(key), string(value), version)
 	}
