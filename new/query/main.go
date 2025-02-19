@@ -68,7 +68,7 @@ func main() {
 		}
 
 		if string(key) != fmt.Sprintf("key-%010d", counter) {
-			panic(fmt.Sprintf("wrong key: %s, %s", string(key), string(value)))
+			panic(fmt.Sprintf("wrong key: %s, %s, %d", string(key), string(value), binary.LittleEndian.Uint64(itr.Timestamp().Data())))
 		}
 		if string(value) != fmt.Sprintf("value-%d-%d", counter, counter%1000+20) {
 			panic(fmt.Sprintf("wrong value: %s, %s", string(key), string(value)))

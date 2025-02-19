@@ -3,29 +3,12 @@ package main
 import (
 	"encoding/binary"
 	"fmt"
-	"math"
 	"os"
 	"slices"
 
 	"github.com/crypto-org-chain/cronos/versiondb/tsrocksdb"
 	"github.com/linxGnu/grocksdb"
 )
-
-func newTSReadOptions(version *int64) *grocksdb.ReadOptions {
-	var ver uint64
-	if version == nil {
-		ver = math.MaxUint64
-	} else {
-		ver = uint64(*version)
-	}
-
-	var ts [tsrocksdb.TimestampSize]byte
-	binary.LittleEndian.PutUint64(ts[:], ver)
-
-	readOpts := grocksdb.NewDefaultReadOptions()
-	readOpts.SetTimestamp(ts[:])
-	return readOpts
-}
 
 type KVPairWithTS struct {
 	Key       []byte
@@ -49,7 +32,7 @@ func main() {
 		for j := 0; j < 5; j++ {
 			version := j + 10
 			binary.LittleEndian.PutUint64(ts[:], uint64(version))
-			value := []byte(fmt.Sprintf("value-%d-%d", i, j))
+			value := []byte(fmt.Sprintf("value-%d-%d", i, version))
 			pairs = append(pairs, KVPairWithTS{
 				Key:       key,
 				Value:     value,
@@ -76,8 +59,8 @@ func main() {
 	defaultSyncWriteOpts := grocksdb.NewDefaultWriteOptions()
 	defaultSyncWriteOpts.SetSync(true)
 
-	readOpts := grocksdb.NewDefaultReadOptions()
-	defer readOpts.Destroy()
+	// clear ts to 0
+	binary.LittleEndian.PutUint64(ts[:], 0)
 
 	batch := grocksdb.NewWriteBatch()
 	defer batch.Destroy()
