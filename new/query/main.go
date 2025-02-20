@@ -44,11 +44,6 @@ func main() {
 	readOpts := newTSReadOptions(&version)
 	readOpts2 := newTSReadOptions(&version)
 
-	defer func() {
-		readOpts.Destroy()
-		readOpts2.Destroy()
-	}()
-
 	for i := 0; i < 10000; i++ {
 		key := fmt.Sprintf("key-%010d", i)
 		data, err := db.GetCF(readOpts, cfHandle, []byte(key))
