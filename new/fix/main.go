@@ -69,7 +69,6 @@ func main() {
 		fmt.Printf("fix data: key: %s, ts: %d, value: %s\n", string(pair.Key), binary.LittleEndian.Uint64(pair.Timestamp), string(pair.Value))
 
 		// also write the timestamp 0 values
-		batch.PutCFWithTS(cfHandle, append(pair.Key, pair.Timestamp...), ts[:], pair.Value)
 	}
 	if err := db.Write(defaultSyncWriteOpts, batch); err != nil {
 		panic(err)
