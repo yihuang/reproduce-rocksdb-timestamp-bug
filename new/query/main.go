@@ -32,13 +32,16 @@ type KVPairWithTS struct {
 	Timestamp []byte
 }
 
-func main() {
-	dir := os.Args[1]
-
+func run(dir string) {
 	db, cfHandle, err := m.OpenDB(dir)
 	if err != nil {
 		panic(err)
 	}
+
+	defer func() {
+		cfHandle.Destroy()
+		db.Close()
+	}()
 
 	version := int64(100000)
 
@@ -74,6 +77,14 @@ func main() {
 		}
 		fmt.Println(string(key), string(value))
 		counter++
+	}
+	itr.Close()
+}
+
+func main() {
+	dir := os.Args[1]
+	for i := 0; i < 500; i++ {
+		run(dir)
 	}
 }
 
