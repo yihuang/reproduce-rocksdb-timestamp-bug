@@ -44,12 +44,10 @@ func run(dir string) {
 	}()
 
 	version := int64(100000)
-	readOpts := newTSReadOptions(&version)
-	readOpts2 := newTSReadOptions(&version)
 
 	for i := 0; i < 10000; i++ {
 		key := fmt.Sprintf("key-%010d", i)
-		data, err := db.GetCF(readOpts, cfHandle, []byte(key))
+		data, err := db.GetCF(newTSReadOptions(&version), cfHandle, []byte(key))
 		if err != nil {
 			panic(err)
 		}
@@ -59,7 +57,7 @@ func run(dir string) {
 		data.Free()
 	}
 
-	itr := db.NewIteratorCF(readOpts2, cfHandle)
+	itr := db.NewIteratorCF(newTSReadOptions(&version), cfHandle)
 	itr.SeekToFirst()
 	counter := 0
 	for ; itr.Valid(); itr.Next() {

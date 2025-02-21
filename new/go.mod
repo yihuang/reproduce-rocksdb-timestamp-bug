@@ -2,6 +2,8 @@ module example.com/m
 
 go 1.23.1
 
+toolchain go1.23.6
+
 require github.com/linxGnu/grocksdb v1.9.2
 
 require (
@@ -9,4 +11,4 @@ require (
 	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
 )
 
-replace github.com/linxGnu/grocksdb => github.com/mmsqe/grocksdb v0.0.0-20250220102931-e805b4f92a55
+replace github.com/linxGnu/grocksdb => github.com/yihuang/grocksdb v1.7.15-0.20250219065307-a7957339ecd1
