@@ -2,8 +2,6 @@ module example.com/m
 
 go 1.23.1
 
-toolchain go1.23.6
-
 require github.com/linxGnu/grocksdb v1.9.2
 
 require (
